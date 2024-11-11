@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Video and Play It Back</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        video {
+            border: 2px solid #ccc;
+            max-width: 100%;
+            max-height: 400px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Live Video Capture -->
+    <video id="videoElement" autoplay></video>
+
+    <!-- Buttons to start and stop recording -->
+    <button id="startRecordingButton">Start Recording</button>
+    <button id="stopRecordingButton" disabled>Stop Recording</button>
+
+    <!-- Container for recorded video playback -->
+    <div id="recordedVideoContainer" style="display: none;">
+        <h3>Recorded Video</h3>
+        <video id="recordedVideo" controls></video>
+    </div>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        const startButton = document.getElementById('startRecordingButton');
+        const stopButton = document.getElementById('stopRecordingButton');
+        const recordedVideoContainer = document.getElementById('recordedVideoContainer');
+        const recordedVideo = document.getElementById('recordedVideo');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+
+        // Feature detection: check if getUserMedia and MediaRecorder are supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+            alert("Your browser does not support video capture or recording.");
+        } else {
+            // Start video capture
+            function startVideoCapture() {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (userStream) {
+                        stream = userStream;
+                        videoElement.srcObject = stream;
+                    })
+                    .catch(function (error) {
+                        console.error('Error accessing the camera: ', error);
+                    });
+            }
+
+            // Start recording
+            function startRecording() {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = function(event) {
+                    recordedChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = function() {
+                    const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+
+                    recordedVideo.src = videoUrl;
+                    recordedVideoContainer.style.display = 'block';
+                };
+
+                mediaRecorder.start();
+                startButton.disabled = true;
+                stopButton.disabled = false;
+            }
+
+            // Stop recording
+            function stopRecording() {
+                mediaRecorder.stop();
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            }
+
+            // Start video capture when the page loads
+            window.onload = startVideoCapture;
+
+            // Button event listeners
+            startButton.addEventListener('click', startRecording);
+            stopButton.addEventListener('click', stopRecording);
+        }
+    </script>
+
+</body>
+</html>
