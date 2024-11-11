@@ -58,9 +58,16 @@
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
             alert("Your browser does not support video capture or recording.");
         } else {
-            // Start video capture
+            // Start video capture from the rear camera
             function startVideoCapture() {
-                navigator.mediaDevices.getUserMedia({ video: true })
+                // Request rear camera by setting facingMode to "environment"
+                const constraints = {
+                    video: {
+                        facingMode: { exact: "environment" }  // This forces the rear camera
+                    }
+                };
+
+                navigator.mediaDevices.getUserMedia(constraints)
                     .then(function (userStream) {
                         stream = userStream;
                         videoElement.srcObject = stream;
