@@ -1,55 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Record Video and Play It Back</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        .videoContainer {
+            height: 150px;
+            width: 100vw;
+            border: 2px solid black;
+            background-color: pink;
+        }
+
+        .video-cnt {
             display: flex;
-            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .videoPreview {
+            height: 90px;
+            width: 500px;
+            border: 2px solid black;
+        }
+
+        .btn-recording {
+            display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
         }
-        .video-container {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 900px; /* Max width to prevent stretching */
-            margin-bottom: 20px;
-        }
-        video {
-            border: 2px solid #ccc;
-            width: 48%; /* Each video will take up about 50% width with some margin */
-            height: auto;
-        }
-        .button-container {
-            margin-top: 20px;
-        }
-        button {
+
+        .btn-recording button {
             padding: 10px 15px;
             margin: 10px;
             cursor: pointer;
         }
     </style>
 </head>
+
 <body>
 
-    <!-- Video container with live video and recorded video side by side -->
-    <div class="video-container">
-        <video id="videoElement" autoplay></video>
-        <div id="recordedVideoContainer" style="display: none;">
+    <!-- Live Video Capture -->
+    <div class="videoContainer">
+        <div class="video-cnt">
+            <h3>Live Preview</h3>
             <h3>Recorded Video</h3>
-            <video id="recordedVideo" controls></video>
+        </div>
+        <div class="video-cnt">
+            <video id="videoElement" class="videoPreview" autoplay></video>
+            <video id="recordedVideo" class="videoPreview" controls></video>
         </div>
     </div>
 
-    <!-- Button container -->
-    <div class="button-container">
+    <!-- Buttons to start and stop recording -->
+    <div class="btn-recording">
         <button id="startRecordingButton">Start Recording</button>
         <button id="stopRecordingButton" disabled>Stop Recording</button>
     </div>
@@ -58,7 +61,6 @@
         const videoElement = document.getElementById('videoElement');
         const startButton = document.getElementById('startRecordingButton');
         const stopButton = document.getElementById('stopRecordingButton');
-        const recordedVideoContainer = document.getElementById('recordedVideoContainer');
         const recordedVideo = document.getElementById('recordedVideo');
 
         let mediaRecorder;
@@ -69,12 +71,11 @@
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
             alert("Your browser does not support video capture or recording.");
         } else {
-            // Start video capture from the rear camera
+            // Start video capture using the rear camera
             function startVideoCapture() {
-                // Request rear camera by setting facingMode to "environment"
                 const constraints = {
                     video: {
-                        facingMode: { exact: "environment" }  // This forces the rear camera
+                        facingMode: "environment" // Use the rear camera
                     }
                 };
 
@@ -93,16 +94,15 @@
                 recordedChunks = [];
                 mediaRecorder = new MediaRecorder(stream);
 
-                mediaRecorder.ondataavailable = function(event) {
+                mediaRecorder.ondataavailable = function (event) {
                     recordedChunks.push(event.data);
                 };
 
-                mediaRecorder.onstop = function() {
+                mediaRecorder.onstop = function () {
                     const videoBlob = new Blob(recordedChunks, { type: 'video/webm' });
                     const videoUrl = URL.createObjectURL(videoBlob);
 
                     recordedVideo.src = videoUrl;
-                    recordedVideoContainer.style.display = 'block';
                 };
 
                 mediaRecorder.start();
@@ -127,4 +127,5 @@
     </script>
 
 </body>
+
 </html>
